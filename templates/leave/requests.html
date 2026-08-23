@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Leave Requests - HR Portal{% endblock %}
+
+{% block content %}
+<h2>Pending Leave Requests</h2>
+<p style="color:var(--text-muted); margin-bottom: 1.5rem;">Review and action the leave requests from your team.</p>
+
+<div class="card">
+    {% if requests %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Leave Type</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Days</th>
+                    <th>Reason</th>
+                    <th>Applied On</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td><strong>{{ req.employee.first_name }} {{ req.employee.last_name }}</strong></td>
+                    <td>{{ req.leave_type.name }}</td>
+                    <td>{{ req.start_date }}</td>
+                    <td>{{ req.end_date }}</td>
+                    <td>{{ req.days_requested }}</td>
+                    <td style="max-width:180px;">{{ req.reason }}</td>
+                    <td>{{ req.created_at.strftime('%d %b %Y') if req.created_at else '—' }}</td>
+                    <td>
+                        <form action="{{ url_for('leave.manage_requests') }}" method="POST" style="display:flex; gap:0.4rem;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" name="request_id" value="{{ req.id }}">
+                            <input type="text" name="comment" placeholder="Comment (optional)" style="padding: 0.3rem 0.5rem; font-size:0.85rem; width: 130px;">
+                            <button type="submit" name="action" value="Approved" class="btn btn-primary" style="font-size:0.8rem; padding:0.3rem 0.6rem;">Approve</button>
+                            <button type="submit" name="action" value="Rejected" class="btn btn-danger" style="font-size:0.8rem; padding:0.3rem 0.6rem;">Reject</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="text-align:center; color:var(--text-muted); padding: 2rem 0;">🎉 No pending leave requests. All caught up!</p>
+    {% endif %}
+</div>
+{% endblock %}

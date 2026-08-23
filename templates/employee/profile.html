@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ employee.first_name }} {{ employee.last_name }} - HR Portal{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+    <h2>Employee Profile</h2>
+    <div>
+        {% if current_user.role == 'HR Admin' %}
+        <a href="{{ url_for('employee.edit', employee_id=employee.id) }}" class="btn btn-secondary">Edit Profile</a>
+        {% endif %}
+        <a href="{{ url_for('employee.index') }}" class="btn btn-secondary">Back to Directory</a>
+    </div>
+</div>
+
+<div class="grid grid-cols-2">
+    <!-- Personal Info -->
+    <div class="card">
+        <h3>Personal Information</h3>
+        <table style="margin-top: 1rem;">
+            <tr><td style="color:var(--text-muted); width:140px; border:none; padding: 0.4rem 0;">Full Name</td><td style="border:none; padding: 0.4rem 0;"><strong>{{ employee.first_name }} {{ employee.last_name }}</strong></td></tr>
+            <tr><td style="color:var(--text-muted); border:none; padding: 0.4rem 0;">Email</td><td style="border:none; padding: 0.4rem 0;">{{ employee.email }}</td></tr>
+            <tr><td style="color:var(--text-muted); border:none; padding: 0.4rem 0;">Phone</td><td style="border:none; padding: 0.4rem 0;">{{ employee.phone_number or '—' }}</td></tr>
+            <tr><td style="color:var(--text-muted); border:none; padding: 0.4rem 0;">Date of Birth</td><td style="border:none; padding: 0.4rem 0;">{{ employee.date_of_birth or '—' }}</td></tr>
+            <tr><td style="color:var(--text-muted); border:none; padding: 0.4rem 0;">Date of Joining</td><td style="border:none; padding: 0.4rem 0;">{{ employee.date_of_joining }}</td></tr>
+        </table>
+    </div>
+
+    <!-- Job Info -->
+    <div class="card">
+        <h3>Job Information</h3>
+        <table style="margin-top: 1rem;">
+            <tr><td style="color:var(--text-muted); width:140px; border:none; padding: 0.4rem 0;">Department</td><td style="border:none; padding: 0.4rem 0;">{{ employee.department.name if employee.department else '—' }}</td></tr>
+            <tr><td style="color:var(--text-muted); border:none; padding: 0.4rem 0;">Designation</td><td style="border:none; padding: 0.4rem 0;">{{ employee.designation.title if employee.designation else '—' }}</td></tr>
+            <tr><td style="color:var(--text-muted); border:none; padding: 0.4rem 0;">Manager</td><td style="border:none; padding: 0.4rem 0;">{{ employee.manager.first_name ~ ' ' ~ employee.manager.last_name if employee.manager else '—' }}</td></tr>
+            <tr><td style="color:var(--text-muted); border:none; padding: 0.4rem 0;">Role</td><td style="border:none; padding: 0.4rem 0;"><span class="badge badge-info">{{ employee.user.role }}</span></td></tr>
+        </table>
+    </div>
+
+    <!-- Documents -->
+    <div class="card" style="grid-column: 1 / -1;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem;">
+            <h3>Documents</h3>
+            {% if current_user.role == 'HR Admin' or (current_employee and current_employee.id == employee.id) %}
+            <form action="{{ url_for('document.upload') }}" method="POST" enctype="multipart/form-data" style="display:flex; gap: 0.5rem; align-items:center;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="employee_id" value="{{ employee.id }}">
+                <input type="file" name="document" required>
+                <select name="document_type">
+                    <option value="Resume">Resume</option>
+                    <option value="Offer Letter">Offer Letter</option>
+                    <option value="ID Proof">ID Proof</option>
+                    <option value="Other">Other</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+            {% endif %}
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr><th>Filename</th><th>Type</th><th>Uploaded</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for doc in documents %}
+                    <tr>
+                        <td>{{ doc.filename }}</td>
+                        <td>{{ doc.document_type }}</td>
+                        <td>{{ doc.uploaded_at.strftime('%d %b %Y') if doc.uploaded_at else '—' }}</td>
+                        <td>
+                            <a href="{{ url_for('document.download', document_id=doc.id) }}" class="btn btn-secondary" style="font-size:0.85rem; padding:0.3rem 0.6rem;">Download</a>
+                            {% if current_user.role == 'HR Admin' %}
+                            <form action="{{ url_for('document.delete', document_id=doc.id) }}" method="POST" style="display:inline;">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-danger" style="font-size:0.85rem; padding:0.3rem 0.6rem;" onclick="return confirm('Delete this document?')">Delete</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No documents uploaded yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}HR Portal{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if current_user %}
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            HR Portal
+        </div>
+        <ul class="nav-links">
+            <li><a href="{{ url_for('dashboard.index') }}" class="nav-item">Dashboard</a></li>
+            
+            {% if current_employee %}
+            <li><a href="{{ url_for('employee.profile', employee_id=current_employee.id) }}" class="nav-item">My Profile</a></li>
+            <li><a href="{{ url_for('attendance.my_logs') }}" class="nav-item">My Attendance</a></li>
+            <li><a href="{{ url_for('leave.my_leaves') }}" class="nav-item">My Leaves</a></li>
+            <li><a href="{{ url_for('leave.apply') }}" class="nav-item">Apply Leave</a></li>
+            {% endif %}
+            
+            <li><a href="{{ url_for('employee.index') }}" class="nav-item">Employee Directory</a></li>
+            <li><a href="{{ url_for('holiday.calendar') }}" class="nav-item">Holiday Calendar</a></li>
+
+            {% if current_user.role in ['HR Admin', 'Manager'] %}
+            <li><a href="{{ url_for('leave.manage_requests') }}" class="nav-item">Leave Requests</a></li>
+            {% endif %}
+
+            {% if current_user.role == 'HR Admin' %}
+            <li><a href="{{ url_for('employee.onboard') }}" class="nav-item">Onboard Employee</a></li>
+            {% endif %}
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="user-info">
+                {% if current_employee %}
+                    {{ current_employee.first_name }} {{ current_employee.last_name }} 
+                {% else %}
+                    {{ current_user.username }}
+                {% endif %}
+                <span class="badge badge-info">{{ current_user.role }}</span>
+                | 
+                <a href="{{ url_for('auth.change_password') }}">Change Password</a>
+                |
+                <form action="{{ url_for('auth.logout') }}" method="POST" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.85rem;">Logout</button>
+                </form>
+            </div>
+        </header>
+        <div class="content-wrapper">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    {% else %}
+        <!-- For Login Page without Sidebar -->
+        <div class="center-wrapper">
+            <div class="content-wrapper" style="max-width: 100%; width: 100%; padding: 0;">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <div style="max-width: 400px; margin: 1rem auto;">
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+                {% block center_content %}{% endblock %}
+            </div>
+        </div>
+    {% endif %}
+</body>
+</html>

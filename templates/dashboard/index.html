@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - HR Portal{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 2rem;">
+    <h2>Welcome, {% if employee %}{{ employee.first_name }} {{ employee.last_name }}{% else %}{{ current_user.username }}{% endif %}!</h2>
+    <p class="text-muted">Role: {{ current_user.role }}</p>
+</div>
+
+<div class="grid grid-cols-2">
+    <!-- Quick Actions -->
+    <div class="card">
+        <h3>Quick Actions</h3>
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+            {% if current_employee %}
+            <li>
+                <form action="{{ url_for('attendance.check_in') }}" method="POST" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Check In</button>
+                </form>
+            </li>
+            <li>
+                <form action="{{ url_for('attendance.check_out') }}" method="POST" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-secondary" style="width: 100%;">Check Out</button>
+                </form>
+            </li>
+            <li>
+                <a href="{{ url_for('leave.apply') }}" class="btn btn-secondary" style="width: 100%; display:block;">Apply for Leave</a>
+            </li>
+            {% endif %}
+            
+            {% if current_user.role == 'HR Admin' %}
+            <li>
+                <a href="{{ url_for('employee.onboard') }}" class="btn btn-primary" style="width: 100%; display:block;">Onboard New Employee</a>
+            </li>
+            <li>
+                <a href="{{ url_for('holiday.calendar') }}" class="btn btn-secondary" style="width: 100%; display:block;">Manage Holidays</a>
+            </li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Recent Attendance -->
+    {% if data and data.recent_attendance %}
+    <div class="card">
+        <h3>Recent Attendance</h3>
+        <div class="table-responsive" style="margin-top: 1rem;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in data.recent_attendance|reverse %}
+                    <tr>
+                        <td>{{ record.date }}</td>
+                        <td>{{ record.check_in_time.strftime('%H:%M') if record.check_in_time else '-' }}</td>
+                        <td>{{ record.check_out_time.strftime('%H:%M') if record.check_out_time else '-' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{{ url_for('attendance.my_logs') }}" class="btn btn-secondary" style="font-size: 0.9rem;">View All Logs</a>
+    </div>
+    {% endif %}
+
+    <!-- Pending Leaves -->
+    {% if data and data.pending_leaves %}
+    <div class="card" style="grid-column: 1 / -1;">
+        <h3>My Pending Leaves</h3>
+        <div class="table-responsive" style="margin-top: 1rem;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Leave Type</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>Days</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for req in data.pending_leaves %}
+                    <tr>
+                        <td>{{ req.leave_type.name }}</td>
+                        <td>{{ req.start_date }}</td>
+                        <td>{{ req.end_date }}</td>
+                        <td>{{ req.days_requested }}</td>
+                        <td><span class="badge badge-warning">{{ req.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{{ url_for('leave.my_leaves') }}" class="btn btn-secondary" style="font-size: 0.9rem;">Manage Leaves</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

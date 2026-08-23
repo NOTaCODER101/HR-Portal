@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}Employee Directory - HR Portal{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+    <h2>Employee Directory</h2>
+    {% if current_user.role == 'HR Admin' %}
+    <a href="{{ url_for('employee.onboard') }}" class="btn btn-primary">+ Onboard Employee</a>
+    {% endif %}
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for emp in employees %}
+                <tr>
+                    <td><strong>{{ emp.first_name }} {{ emp.last_name }}</strong></td>
+                    <td>{{ emp.email }}</td>
+                    <td>{{ emp.department.name if emp.department else '—' }}</td>
+                    <td>{{ emp.designation.title if emp.designation else '—' }}</td>
+                    <td>{{ emp.date_of_joining }}</td>
+                    <td>
+                        <a href="{{ url_for('employee.profile', employee_id=emp.id) }}" class="btn btn-secondary" style="font-size:0.85rem; padding: 0.3rem 0.6rem;">View</a>
+                        {% if current_user.role == 'HR Admin' %}
+                        <a href="{{ url_for('employee.edit', employee_id=emp.id) }}" class="btn btn-secondary" style="font-size:0.85rem; padding: 0.3rem 0.6rem;">Edit</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" style="text-align:center; color: var(--text-muted);">No employees found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

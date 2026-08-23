@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}My Attendance - HR Portal{% endblock %}
+
+{% block content %}
+<h2>My Attendance Logs</h2>
+<p style="color:var(--text-muted); margin-bottom: 1.5rem;">Showing your most recent attendance records.</p>
+
+<div class="card">
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Check In</th>
+                    <th>Check Out</th>
+                    <th>Hours Worked</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.date.strftime('%d %b %Y') }}</td>
+                    <td>{{ record.check_in_time.strftime('%H:%M') if record.check_in_time else '—' }}</td>
+                    <td>{{ record.check_out_time.strftime('%H:%M') if record.check_out_time else '—' }}</td>
+                    <td>
+                        {% if record.check_in_time and record.check_out_time %}
+                            {% set delta = (record.check_out_time - record.check_in_time).seconds // 60 %}
+                            {{ (delta // 60) }}h {{ (delta % 60) }}m
+                        {% else %}
+                            —
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if record.check_out_time %}
+                            <span class="badge badge-success">Completed</span>
+                        {% elif record.check_in_time %}
+                            <span class="badge badge-warning">In Progress</span>
+                        {% else %}
+                            <span class="badge badge-danger">Absent</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align:center; color:var(--text-muted);">No attendance records found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

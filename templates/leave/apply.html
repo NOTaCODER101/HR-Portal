@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply for Leave - HR Portal{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1.5rem;">
+    <h2>Apply for Leave</h2>
+    <a href="{{ url_for('leave.my_leaves') }}" class="btn btn-secondary">My Leave History</a>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <form method="POST" action="{{ url_for('leave.apply') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+            <label for="leave_type_id">Leave Type *</label>
+            <select id="leave_type_id" name="leave_type_id" required>
+                <option value="">— Select Leave Type —</option>
+                {% for lt in leave_types %}
+                <option value="{{ lt.id }}">{{ lt.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="grid grid-cols-2">
+            <div class="form-group">
+                <label for="start_date">Start Date *</label>
+                <input type="date" id="start_date" name="start_date" required>
+            </div>
+            <div class="form-group">
+                <label for="end_date">End Date *</label>
+                <input type="date" id="end_date" name="end_date" required>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="reason">Reason *</label>
+            <textarea id="reason" name="reason" rows="4" placeholder="Provide a brief reason for your leave request..." required></textarea>
+        </div>
+
+        <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+            <a href="{{ url_for('dashboard.index') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
