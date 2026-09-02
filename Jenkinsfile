@@ -9,21 +9,15 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies'){
-            steps{
-                sh 'pip install -r requirements.txt'
-            }
-        }
-
-        stage('Test'){
-            steps {
-                sh 'pytest'
-            }
-        }
-
         stage('Build Docker Image'){
             steps{
                 sh 'docker build -t branyr/flask-app:latest .'
+            }
+        }
+
+        stage('Test inside Container'){
+            steps {
+                sh 'docker run --rm branyr/flask-app:latest pytest'
             }
         }
 
