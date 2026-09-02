@@ -66,6 +66,6 @@ def create_app(config_override: dict | None = None) -> Flask:
 
     return app
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = create_app()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=3000, debug=True)

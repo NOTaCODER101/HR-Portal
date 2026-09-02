@@ -8,7 +8,8 @@ load_dotenv()
 class Config:
     # Flask core
     SECRET_KEY = os.environ.get('SECRET_KEY', 'default-secret-key-change-in-prod')
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI', 'sqlite:///hr_portal.db')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI', 'mysql+pymysql://root:1234@mysql-db:3306/hr_portal')
+    # SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI', 'sqlite:///hr_portal.db')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Flask-JWT-Extended configuration
